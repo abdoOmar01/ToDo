@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">ToDo</string>
+    <string name="new_task">New Task</string>
+    <string name="task">Task</string>
+    <string name="important">Important</string>
+    <string name="trivial">Trivial</string>
+    <string name="add">Add task</string>
+    <string name="category">Category</string>
+
+    <string-array name="categories">
+        <item>Shopping</item>
+        <item>Workout</item>
+        <item>Hobbies</item>
+        <item>Self-improvement</item>
+    </string-array>
+</resources>
