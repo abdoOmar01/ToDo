@@ -2,11 +2,17 @@ package com.example.todo;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Paint;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,23 +23,51 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String myPref = "preferences";
+    Activity thisActivity = this;
+
+    public boolean getPreferredTheme() {
+        SharedPreferences sp = getSharedPreferences(myPref, 0);
+        return sp.getBoolean("isDay", true);
+    }
+
+    public void setPreferredTheme(boolean t) {
+        SharedPreferences.Editor editor = getSharedPreferences(myPref, 0).edit();
+        editor.putBoolean("isDay", t);
+        editor.apply();
+    }
+
+    ListView taskView;
+    ArrayAdapter<String> taskAdapter;
+    ArrayList<String> taskNames;
+    ToDoDBHelper tasksDB;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(getPreferredTheme() ? R.style.Theme_ToDo : R.style.Theme_ToDoDark);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ListView taskView = findViewById(R.id.tasks);
-        final ArrayAdapter<String> taskNames =
-                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
-        taskView.setAdapter(taskNames);
+        tasksDB = new ToDoDBHelper(getApplicationContext());
 
-        ArrayList<Task> tasks = new ArrayList<>();
+        taskAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
+
+        taskView = findViewById(R.id.tasks);
+        taskView.setAdapter(taskAdapter);
+
+        taskNames = new ArrayList<>();
+
+        Cursor cursor = tasksDB.fetchAllTasks();
+        while (!cursor.isAfterLast()) {
+            taskAdapter.add(cursor.getString(0));
+            taskNames.add(cursor.getString(0));
+            cursor.moveToNext();
+        }
 
         RadioButton important = findViewById(R.id.important);
         RadioButton trivial = findViewById(R.id.trivial);
@@ -45,13 +79,13 @@ public class MainActivity extends AppCompatActivity {
         Button addButton = findViewById(R.id.addButton);
         addButton.setOnClickListener(e -> {
             boolean isDuplicate = false;
-            for (Task t: tasks) {
-                if (t.getName().equals(taskName.getText().toString())) {
+            for (String t: taskNames) {
+                if (t.equals(taskName.getText().toString())) {
                     isDuplicate = true;
                 }
             }
 
-            if (taskName.getText().toString().equals("")) {
+            if (taskName.getText().toString().equalsIgnoreCase("")) {
                 Toast.makeText(this, "Task name can't be empty", Toast.LENGTH_LONG)
                         .show();
             } else if (isDuplicate) {
@@ -61,43 +95,53 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Please specify the importance", Toast.LENGTH_LONG)
                         .show();
             } else {
-                Task task = new Task();
-                task.setName(taskName.getText().toString());
-                task.setCategory(category.getSelectedItem().toString());
-                task.setImportant(important.isChecked());
-                task.setCreationDate(LocalDateTime.now());
+                tasksDB.createNewTask(taskName.getText().toString(),
+                        category.getSelectedItem().toString(), important.isChecked(),
+                        LocalDateTime.now());
 
-                tasks.add(task);
-                taskNames.add(task.getName());
+                taskNames.add(taskName.getText().toString());
+                taskAdapter.add(taskName.getText().toString());
 
                 Toast.makeText(this, "Task \"" + taskName.getText().toString() +
-                        "\" added", Toast.LENGTH_LONG).show();
+                        "\" added", Toast.LENGTH_SHORT).show();
+
+                taskName.setText("");
             }
-        });
-
-        taskView.setOnItemClickListener((adapterView, view, i, l) -> {
-            Task thisTask = null;
-            for (Task t: tasks) {
-                if (t.getName().equals(((TextView)view).getText().toString())) {
-                    thisTask = t;
-                }
-            }
-
-            assert thisTask != null;
-
-            // Should switch to another intent displaying task details
-            // Remove after implementation
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
-            Toast.makeText(getApplicationContext(),
-                    "Category: " + thisTask.getCategory() +
-                            "\n" + (thisTask.getImportant() ? "Important" : "Trivial")
-                            + "\nCreated on: " + thisTask.getCreationDate().format(formatter),
-                    Toast.LENGTH_LONG).show();
         });
 
         // Context menu for each task, showing: edit, delete and mark as completed/pending
     }
 
-    // Options menu for switching Dark/Night theme
-    // after Database!!!!!!!
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.options_menu, menu);
+        return true;
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.theme:
+                setPreferredTheme(!getPreferredTheme());
+                thisActivity.recreate();
+                break;
+
+            case R.id.remove:
+                taskAdapter.clear();
+                taskNames.clear();
+                tasksDB.removeAllTasks();
+                break;
+
+            case R.id.mark:
+                for (String taskName: taskNames) {
+                    tasksDB.markAsCompleted(taskName);
+                }
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + item.getItemId());
+        }
+        return false;
+    }
 }

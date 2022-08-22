@@ -6,11 +6,17 @@
     <string name="trivial">Trivial</string>
     <string name="add">Add task</string>
     <string name="category">Category</string>
+    <string name="theme">Toggle teal/purple themes</string>
+    <string name="remove">Remove all tasks</string>
+    <string name="mark">Mark all tasks as completed</string>
+    <string name="unmark">Mark all tasks as pending</string>
 
     <string-array name="categories">
+        <item>Studying</item>
         <item>Shopping</item>
         <item>Workout</item>
         <item>Hobbies</item>
         <item>Self-improvement</item>
+        <item>Work</item>
     </string-array>
 </resources>
