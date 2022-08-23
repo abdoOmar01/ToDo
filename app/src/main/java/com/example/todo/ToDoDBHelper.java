@@ -1,11 +1,13 @@
 package com.example.todo;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
@@ -79,17 +81,32 @@ public class ToDoDBHelper extends SQLiteOpenHelper {
 
         assert cursor != null;
         cursor.moveToFirst();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
+        if (cursor.getString(4).equals("pending")) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
 
-        ContentValues row = new ContentValues();
-        row.put("name", cursor.getString(0));
-        row.put("category", cursor.getString(1));
-        row.put("isImportant", Boolean.valueOf(cursor.getString(2)));
-        row.put("creationDate", cursor.getString(3));
-        row.put("completionDate", LocalDateTime.now().format(formatter));
+            ContentValues row = new ContentValues();
+            row.put("name", cursor.getString(0));
+            row.put("category", cursor.getString(1));
+            row.put("isImportant", Boolean.valueOf(cursor.getString(2)));
+            row.put("creationDate", cursor.getString(3));
+            row.put("completionDate", LocalDateTime.now().format(formatter));
 
-        todoDatabase.update("task", row, "name=?", args);
+            todoDatabase.update("task", row, "name=?", args);
+        }
         todoDatabase.close();
         cursor.close();
+    }
+
+    public Cursor getRow(String taskName) {
+        todoDatabase = getReadableDatabase();
+        String[] rowDetails = {"name", "category", "isImportant", "creationDate", "completionDate"};
+        String[] args = {taskName};
+        Cursor cursor = todoDatabase.query("task", rowDetails, "name=?", args,
+                null, null, null, null);
+
+        assert cursor != null;
+        cursor.moveToFirst();
+        todoDatabase.close();
+        return cursor;
     }
 }

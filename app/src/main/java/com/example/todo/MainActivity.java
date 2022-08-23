@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -109,7 +110,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Context menu for each task, showing: edit, delete and mark as completed/pending
+        taskView.setOnItemClickListener((adapterView, view, i, l) -> {
+            Cursor itemCursor = tasksDB.getRow(((TextView)view).getText().toString());
+            String status = itemCursor.getString(4);
+            Toast.makeText(thisActivity, status, Toast.LENGTH_LONG).show();
+        });
     }
 
     @Override
