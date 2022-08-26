@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/theme" android:title="@string/theme" />
-    <item android:id="@+id/remove" android:title="@string/remove" />
-    <item android:id="@+id/mark" android:title="@string/mark" />
-    <item android:id="@+id/unmark" android:title="@string/unmark" />
+    <item android:id="@+id/remove" android:title="@string/removeAll" />
+    <item android:id="@+id/mark" android:title="@string/markAll" />
+    <item android:id="@+id/unmark" android:title="@string/unmarkAll" />
 </menu>

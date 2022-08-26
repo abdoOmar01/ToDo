@@ -4,16 +4,15 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Paint;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     public static final String myPref = "preferences";
-    Activity thisActivity = this;
+    //Activity thisActivity = this;
 
     public boolean getPreferredTheme() {
         SharedPreferences sp = getSharedPreferences(myPref, 0);
@@ -112,8 +111,12 @@ public class MainActivity extends AppCompatActivity {
 
         taskView.setOnItemClickListener((adapterView, view, i, l) -> {
             Cursor itemCursor = tasksDB.getRow(((TextView)view).getText().toString());
-            String status = itemCursor.getString(4);
-            Toast.makeText(thisActivity, status, Toast.LENGTH_LONG).show();
+            String status = "Category: " + itemCursor.getString(1) +
+                    "\n" + (Boolean.parseBoolean(itemCursor.getString(2)) ?
+                    "Important" : "Trivial")
+                    + "\nCreated on: " + itemCursor.getString(3)
+                    + "\nCompleted on: " + itemCursor.getString(4);
+            Toast.makeText(this, status, Toast.LENGTH_LONG).show();
         });
     }
 
@@ -130,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.theme:
                 setPreferredTheme(!getPreferredTheme());
-                thisActivity.recreate();
+                this.recreate();
                 break;
 
             case R.id.remove:
@@ -141,12 +144,25 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.mark:
                 for (String taskName: taskNames) {
-                    tasksDB.markAsCompleted(taskName);
+                    tasksDB.mark(taskName, false, false);
                 }
                 break;
+
+            case R.id.unmark:
+                for (String taskName: taskNames) {
+                    tasksDB.mark(taskName, false, true);
+                }
+                break;
+
             default:
                 throw new IllegalStateException("Unexpected value: " + item.getItemId());
         }
         return false;
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo info) {
+        MenuInflater inflater = new MenuInflater(this);
+        inflater.inflate(R.menu.context_menu, menu);
     }
 }
