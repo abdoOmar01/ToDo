@@ -5,7 +5,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     public static final String myPref = "preferences";
-    //Activity thisActivity = this;
 
     public boolean getPreferredTheme() {
         SharedPreferences sp = getSharedPreferences(myPref, 0);
@@ -176,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info =
                 (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        TextView t = (TextView) info.targetView;
         String selectedTask = ((TextView) info.targetView).getText().toString();
 
         switch (item.getItemId()) {
