@@ -12,6 +12,7 @@
     <string name="unmarkAll">Mark all tasks as pending</string>
     <string name="remove">Remove</string>
     <string name="mark">Mark as completed/pending</string>
+    <string name="edit">Edit</string>
 
     <string-array name="categories">
         <item>Studying</item>

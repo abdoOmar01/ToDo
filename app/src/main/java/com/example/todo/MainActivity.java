@@ -1,9 +1,11 @@
 package com.example.todo;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
@@ -13,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -59,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         taskView = findViewById(R.id.tasks);
         taskView.setAdapter(taskAdapter);
+        registerForContextMenu(taskView);
 
         taskNames = new ArrayList<>();
 
@@ -164,5 +168,52 @@ public class MainActivity extends AppCompatActivity {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo info) {
         MenuInflater inflater = new MenuInflater(this);
         inflater.inflate(R.menu.context_menu, menu);
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info =
+                (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        TextView t = (TextView) info.targetView;
+        String selectedTask = ((TextView) info.targetView).getText().toString();
+
+        switch (item.getItemId()) {
+            case R.id.edit:
+                AlertDialog.Builder alert = new AlertDialog.Builder(this);
+                alert.setTitle("Edit task");
+                final EditText input = new EditText(this);
+                alert.setView(input);
+
+                alert.setPositiveButton("Ok", (dialogInterface, i) -> {
+                    tasksDB.editTask(selectedTask, input.getText().toString());
+                    int index = taskAdapter.getPosition(selectedTask);
+                    taskAdapter.remove(selectedTask);
+                    taskAdapter.insert(input.getText().toString(), index);
+
+                    taskNames.set(index, input.getText().toString());
+                });
+
+                alert.setNegativeButton("Cancel", (dialogInterface, i) -> {
+
+                });
+
+                alert.show();
+                return true;
+            case R.id.rm:
+                tasksDB.removeTask(selectedTask);
+                taskAdapter.remove(selectedTask);
+                taskNames.remove(selectedTask);
+
+                return true;
+
+            case R.id.mk:
+                tasksDB.mark(selectedTask, true, false);
+
+                return true;
+        }
+
+        return false;
     }
 }

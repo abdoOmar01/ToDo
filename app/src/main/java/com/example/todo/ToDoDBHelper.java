@@ -69,9 +69,39 @@ public class ToDoDBHelper extends SQLiteOpenHelper {
         todoDatabase.close();
     }
 
+    public void removeTask(String taskName) {
+        todoDatabase = getWritableDatabase();
+        todoDatabase.delete("task", "name=?", new String[]{taskName});
+        todoDatabase.close();
+    }
+
+    public void editTask(String taskName, String newName) {
+        todoDatabase = getWritableDatabase();
+
+        String[] rowDetails = {"name", "category", "isImportant", "creationDate", "completionDate"};
+        String[] args = {taskName};
+        Cursor cursor = todoDatabase.query("task", rowDetails, "name=?", args,
+                null, null, null, null);
+
+        assert cursor != null;
+        cursor.moveToFirst();
+
+        ContentValues row = new ContentValues();
+        row.put("name", newName);
+        row.put("category", cursor.getString(1));
+        row.put("isImportant", Boolean.valueOf(cursor.getString(2)));
+        row.put("creationDate", cursor.getString(3));
+        row.put("completionDate", cursor.getString(4));
+
+        todoDatabase.update("task", row, "name=?", args);
+        todoDatabase.close();
+        cursor.close();
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void mark(String taskName, boolean toggle, boolean pending) {
         todoDatabase = getWritableDatabase();
+
         String[] rowDetails = {"name", "category", "isImportant", "creationDate", "completionDate"};
         String[] args = {taskName};
         Cursor cursor = todoDatabase.query("task", rowDetails, "name=?", args,
@@ -105,6 +135,7 @@ public class ToDoDBHelper extends SQLiteOpenHelper {
                 }
             }
         }
+
         todoDatabase.update("task", row, "name=?", args);
         todoDatabase.close();
         cursor.close();
