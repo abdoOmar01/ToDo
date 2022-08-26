@@ -23,7 +23,7 @@ public class ToDoDBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table task(id integer primary key autoincrement not null," +
-                "name text, category text, isImportant boolean, creationDate text," +
+                "name text, category text, isImportant text, creationDate text," +
                 "completionDate text)");
     }
 
@@ -41,7 +41,7 @@ public class ToDoDBHelper extends SQLiteOpenHelper {
 
         row.put("name", name);
         row.put("category", category);
-        row.put("isImportant", isImportant);
+        row.put("isImportant", (isImportant) ? "Important" : "Trivial");
         row.put("creationDate", creationDate.format(formatter));
         row.put("completionDate", "pending");
 
@@ -89,7 +89,7 @@ public class ToDoDBHelper extends SQLiteOpenHelper {
         ContentValues row = new ContentValues();
         row.put("name", newName);
         row.put("category", cursor.getString(1));
-        row.put("isImportant", Boolean.valueOf(cursor.getString(2)));
+        row.put("isImportant", cursor.getString(2));
         row.put("creationDate", cursor.getString(3));
         row.put("completionDate", cursor.getString(4));
 
@@ -114,7 +114,7 @@ public class ToDoDBHelper extends SQLiteOpenHelper {
         ContentValues row = new ContentValues();
         row.put("name", cursor.getString(0));
         row.put("category", cursor.getString(1));
-        row.put("isImportant", Boolean.valueOf(cursor.getString(2)));
+        row.put("isImportant", cursor.getString(2));
         row.put("creationDate", cursor.getString(3));
 
         if (toggle) {

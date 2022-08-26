@@ -114,8 +114,7 @@ public class MainActivity extends AppCompatActivity {
         taskView.setOnItemClickListener((adapterView, view, i, l) -> {
             Cursor itemCursor = tasksDB.getRow(((TextView)view).getText().toString());
             String status = "Category: " + itemCursor.getString(1) +
-                    "\n" + (Boolean.parseBoolean(itemCursor.getString(2)) ?
-                    "Important" : "Trivial")
+                    "\n" + itemCursor.getString(2)
                     + "\nCreated on: " + itemCursor.getString(3)
                     + "\nCompleted on: " + itemCursor.getString(4);
             Toast.makeText(this, status, Toast.LENGTH_LONG).show();
